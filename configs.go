@@ -38,7 +38,7 @@ type OpenIdConnectConfiguration struct {
 // address from the response.
 //
 // If something fails or otherwise does not work, an error will be returned
-func (c OpenIdConnectConfiguration) Validate() error {
+func (c *OpenIdConnectConfiguration) Validate() error {
 	// check if at least one option was set
 	if c.DiscoveryEndpoint == nil && c.UserInfoEndpoint == nil {
 		return ErrEmptyOpenIdConnectConfig
@@ -113,7 +113,7 @@ type MariaDbConfiguration struct {
 // Validate checks if the configuration contains at least the user, host and
 // database that should be used by the application. All other variables are
 // optional.
-func (c MariaDbConfiguration) Validate() error {
+func (c *MariaDbConfiguration) Validate() error {
 	// check if the host was set in the configuration
 	if c.Host == nil {
 		return ErrNoDatabaseHost
@@ -174,7 +174,7 @@ func (c MariaDbConfiguration) Validate() error {
 // building the connection string, the configuration needs to be validated with
 // Validate. If the configuration is not validated, an empty string will be
 // returned
-func (c MariaDbConfiguration) BuildConnectionString() string {
+func (c *MariaDbConfiguration) BuildConnectionString() string {
 	if c.validated {
 		return fmt.Sprintf("%s:%s@%s:%s/%s?parseTime=true",
 			*c.User, *c.Password, *c.Host, *c.Port, *c.Database)
