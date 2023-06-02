@@ -2,7 +2,7 @@
 <img src="images/logo.svg">
 <hr/>
 <img alt="Project License" src="https://img.shields.io/github/license/unikino-gegenlicht/digitales-filmmanagement-backend?style=for-the-badge">
-<img alt="GitHub go.mod Go version" src="https://img.shields.io/github/go-mod/go-version/unikino-gegenlicht/digitales-filmmanagement-backend?label=version&logo=go&style=for-the-badge">
+<img alt="GitHub go.mod Go version" src="https://img.shields.io/github/go-mod/go-version/unikino-gegenlicht/digitales-filmmanagement-backend?filename=src%2Fgo.mod&label=version&logo=go&style=for-the-badge">
 </div>
 
 ## 📖 About
