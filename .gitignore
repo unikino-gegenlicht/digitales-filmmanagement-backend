@@ -17,7 +17,7 @@
 !README.md
 !LICENSE
 !images/
-!.github
+!.github/**
 !Dockerfile
 # !Makefile
 
