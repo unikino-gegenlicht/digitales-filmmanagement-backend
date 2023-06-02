@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod" # See documentation for possible values
+    directory: "/" # Location of package manifests
+    allow:
+      - dependency-type: "direct"
+    schedule:
+      interval: "daily"
+    assignees:
+      - "captainsuchard"
+    commit-message:
+      prefix: "⬆️"
