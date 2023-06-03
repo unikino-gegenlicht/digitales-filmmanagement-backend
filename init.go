@@ -108,4 +108,12 @@ func init() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("ping failed but initial connection successful")
 	}
+	// since all connections have been successful, set the global connection
+	// to the one just created
+	globals.Database = conn
+	// TODO: implement database checks
+	//	 the checks shall include:
+	//	    - existence of database schema
+	//	    - existence of tables
+	//		- definition of tables
 }
