@@ -1,12 +1,18 @@
 package main
 
 import (
+	"database/sql"
+	config "digitales-filmmanagement-backend/config"
 	"digitales-filmmanagement-backend/globals"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
 	"os"
+	"time"
+
+	// database driver
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // This function configures the zerolog logging library which is used for
@@ -52,29 +58,54 @@ func init() {
 	}
 
 	// now create an empty configuration object
-	var config Configuration
+	var conf config.Configuration
 	// now try to open the configuration file
 	file, err := os.Open(fileLocation)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to open configuration file")
 	}
 	// and now try to read it
-	err = toml.NewDecoder(file).Decode(&config)
+	err = toml.NewDecoder(file).Decode(&conf)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to read/parse configuration file")
 	}
 	// now log the configuration to the debug output
-	log.Debug().Interface("config", config).Send()
+	log.Debug().Interface("config", conf).Send()
 	// after reading the configuration, validate the sub-configurations
-	err = config.OIDC.Validate()
+	err = conf.OIDC.Validate()
 	if err != nil {
 		log.Fatal().Err(err).Msg("invalid OIDC configuration")
 	}
 	// since this step modifies some values, reprint the configuration
-	log.Debug().Interface("config", config).Msg("configuration modified")
-	err = config.Database.Validate()
+	log.Debug().Interface("config", conf).Msg("configuration modified")
+	err = conf.Database.Validate()
 	if err != nil {
 		log.Fatal().Err(err).Msg("invalid database configuration")
 	}
-	globals.Configuration = config
+	globals.Configuration = conf
+}
+
+// This function connects the application to the MariaDB server and checks if
+// all needed tables are present in the database. If not, the tables will be
+// created by this function
+func init() {
+	// get the mariadb configuration
+	dbConfig := globals.Configuration.Database
+	// now get the connection string
+	dsn := dbConfig.BuildConnectionString()
+	log.Debug().Str("dsn", dsn).Msg("built data source name")
+	// now open the connection to the database
+	conn, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to connect to database")
+	}
+	// now set some connection properties for better usability/less errors
+	conn.SetConnMaxLifetime(time.Minute * 3)
+	conn.SetMaxOpenConns(50)
+	conn.SetMaxIdleConns(50)
+	// now ping the database again, to verify the connection
+	err = conn.Ping()
+	if err != nil {
+		log.Fatal().Err(err).Msg("ping failed but initial connection successful")
+	}
 }
