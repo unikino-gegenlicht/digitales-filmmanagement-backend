@@ -53,8 +53,8 @@ func init() {
 	fileLocation, isSet := os.LookupEnv("CONFIGURATION_LOCATION")
 	// if no location was set manually, use the default value
 	if !isSet {
-		log.Debug().Str("path", "/configuration.toml").Msg("no configuration location set via environment. using default")
-		fileLocation = "/configuration.toml"
+		log.Debug().Str("path", "./configuration.toml").Msg("no configuration location set via environment. using default")
+		fileLocation = "./configuration.toml"
 	}
 
 	// now create an empty configuration object
