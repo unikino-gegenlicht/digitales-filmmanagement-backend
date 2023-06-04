@@ -89,3 +89,18 @@ func (c *MariaDbConfiguration) BuildConnectionString() string {
 	return ""
 
 }
+
+// BuildSchemalessDSN returns the dsn for the configured database connection
+// without specifying the database schema it should use. This string can be
+// used to allow checking databases for tables or present schemas.
+//
+// To use this function, the configuration needs to be validated first using
+// the Validate function
+func (c *MariaDbConfiguration) BuildSchemalessDSN() string {
+	if c.validated {
+		return fmt.Sprintf("%s:%s@tcp(%s:%s)/?parseTime=true",
+			*c.User, *c.Password, *c.Host, *c.Port)
+
+	}
+	return ""
+}
