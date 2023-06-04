@@ -13,7 +13,7 @@ type MariaDbConfiguration struct {
 	Port      *string `toml:"port"`
 	User      *string `toml:"user"`
 	Password  *string `toml:"password"`
-	Database  *string `toml:"database"`
+	Schema    *string `toml:"schema"`
 	validated bool
 }
 
@@ -38,11 +38,11 @@ func (c *MariaDbConfiguration) Validate() error {
 		return ErrEmptyDatabaseUser
 	}
 	// check if the host was set in the configuration
-	if c.Database == nil {
+	if c.Schema == nil {
 		return ErrNoDatabaseSpecified
 	}
 	// now check if the host is empty
-	if strings.TrimSpace(*c.Database) == "" {
+	if strings.TrimSpace(*c.Schema) == "" {
 		return ErrEmptyDatabaseSpecified
 	}
 
@@ -84,7 +84,7 @@ func (c *MariaDbConfiguration) Validate() error {
 func (c *MariaDbConfiguration) BuildConnectionString() string {
 	if c.validated {
 		return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
-			*c.User, *c.Password, *c.Host, *c.Port, *c.Database)
+			*c.User, *c.Password, *c.Host, *c.Port, *c.Schema)
 	}
 	return ""
 
