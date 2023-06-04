@@ -92,35 +92,51 @@ func init() {
 	}
 }
 
-// This function connects the application to the MariaDB server and checks if
-// all needed tables are present in the database. If not, the tables will be
-// created by this function
+// this function connects the application to the database server and checks if
+// the wanted database schema is present on the server. to achieve this, this
+// step creates a temporary database connection which connects to a user's
+// default database schema. the connection is closed after this step
 func init() {
-	// get the mariadb configuration
-	dbConfig := globals.Configuration.Database
-	// now get the connection string
-	dsn := dbConfig.BuildConnectionString()
-	log.Debug().Str("dsn", dsn).Msg("built data source name")
-	// now open the connection to the database
-	conn, err := sql.Open("mysql", dsn)
+	// get the configuration
+	c := globals.Configuration.Database
+
+	// use the configuration to create a dsn without specifying the schema
+	dsn := c.BuildSchemalessDSN()
+
+	// now open a connection to the database
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatal().Err(err).Msg("unable to connect to database")
+		log.Fatal().Err(err).Msg("unable to open database connection")
 	}
-	// now set some connection properties for better usability/less errors
-	conn.SetConnMaxLifetime(time.Minute * 3)
-	conn.SetMaxOpenConns(50)
-	conn.SetMaxIdleConns(50)
-	// now ping the database again, to verify the connection
-	err = conn.Ping()
+	// now defer the closing of the database connection until the function ends
+	// if the connection cannot be closed, a warning is printed
+	defer func(db *sql.DB) {
+		if err := db.Close(); err != nil {
+			log.Warn().Err(err).Msg("unable to close database connection")
+		} else {
+			log.Info().Msg("closed temporary database connection")
+		}
+	}(db)
+	// now log a status message to indicate that the database was connected
+	// and the database is now tested
+	log.Info().Msg("connected to database via temporary connection")
+	log.Info().Msg("checking for database schema")
+
+	// now execute the schema check query
+	row, err := globals.SqlQueries.QueryRow(db, "is-schema-available", c.Schema)
 	if err != nil {
-		log.Fatal().Err(err).Msg("ping failed but initial connection successful")
+		log.Fatal().Err(err).Msg("unable to verify the provided database schema name")
 	}
-	// since all connections have been successful, set the global connection
-	// to the one just created
-	globals.Database = conn
-	// TODO: implement database checks
-	//	 the checks shall include:
-	//	    - existence of database schema
-	//	    - existence of tables
-	//		- definition of tables
+	// now parse the response into a boolean
+	var schemaFound bool
+	err = row.Scan(&schemaFound)
+
+	if !schemaFound {
+		log.Fatal().Msg("configured schema not found in the database.")
+	}
+
+	// since the schema is set up in the database, this function is done with
+	// its task. due to the "defer" statement, the connection will now be closed
+	// automatically
+	log.Info().Msg("database schema found. closing temporary database connection")
 }

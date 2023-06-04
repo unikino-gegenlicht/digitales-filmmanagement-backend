@@ -6,6 +6,7 @@ require (
 	github.com/go-chi/httplog v0.3.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/pelletier/go-toml/v2 v2.0.8
+	github.com/qustavo/dotsql v1.1.0
 	github.com/rs/zerolog v1.29.1
 )
 
