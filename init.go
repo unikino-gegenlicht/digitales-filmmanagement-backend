@@ -2,15 +2,16 @@ package main
 
 import (
 	"database/sql"
-	config "digitales-filmmanagement-backend/config"
-	"digitales-filmmanagement-backend/globals"
+	"os"
+
 	"github.com/pelletier/go-toml/v2"
+	"github.com/qustavo/dotsql"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
-	"os"
-	"time"
 
+	"digitales-filmmanagement-backend/config"
+	"digitales-filmmanagement-backend/globals"
 	// database driver
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -83,6 +84,12 @@ func init() {
 		log.Fatal().Err(err).Msg("invalid database configuration")
 	}
 	globals.Configuration = conf
+
+	// since the configuration is valid, load the sql queries for the database
+	globals.SqlQueries, err = dotsql.LoadFromFile("./queries.sql")
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to load sql queries")
+	}
 }
 
 // This function connects the application to the MariaDB server and checks if
