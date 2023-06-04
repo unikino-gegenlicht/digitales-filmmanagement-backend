@@ -1,0 +1,3 @@
+[submodule "docs"]
+	path = docs
+	url = https://github.com/unikino-gegenlicht/digitales-filmmanagement-backend.wiki.git
