@@ -6,7 +6,7 @@ info:
 
 servers:
   - description: Server
-    url: "/api"
+    url: "../api"
 
 components:
   securitySchemes:
