@@ -1,23 +1,32 @@
+# exclude every file
 *
 
-!/.gitignore
-!/.dockerignore
-
-!*.go
-!go.sum
+# now allow files for the package management
 !go.mod
+!go.sum
 
-!README.md
-!LICENSE
-!images/
-!.github/**
-!Dockerfile
-!queries.sql
-!Makefile
-!openapi.yaml
+# now only allow *.go files
+!*.go
 
-# ...even if they are in subdirectories
-!*/*.go
-!types/**/*.go
-!middleware/**/*.go
+# now allow the folders containing the .go files
+!config
+!globals
 !middleware
+!types
+!types/**
+
+# now allow the file containing the sql queries for this project
+!queries.sql
+
+# now allow the docker related files
+!Dockerfile
+!.dockerignore
+
+# now allow some documentation files
+!README.md
+!openapi.yaml
+!LICENSE
+
+# now some misc folders
+!.github
+!images
