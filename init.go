@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/pelletier/go-toml/v2"
 	"github.com/qustavo/dotsql"
@@ -13,7 +15,7 @@ import (
 	"digitales-filmmanagement-backend/config"
 	"digitales-filmmanagement-backend/globals"
 	// database driver
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 // This function configures the zerolog logging library which is used for
@@ -101,10 +103,12 @@ func init() {
 	c := globals.Configuration.Database
 
 	// use the configuration to create a dsn without specifying the schema
-	dsn := c.BuildSchemalessDSN()
+	dsn := c.BuildDSN()
+
+	fmt.Println(dsn)
 
 	// now open a connection to the database
-	db, err := sql.Open("mysql", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to open database connection")
 	}
@@ -131,6 +135,10 @@ func init() {
 	var schemaFound bool
 	err = row.Scan(&schemaFound)
 
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to read database response")
+	}
+
 	if !schemaFound {
 		log.Fatal().Msg("configured schema not found in the database.")
 	}
@@ -139,4 +147,55 @@ func init() {
 	// its task. due to the "defer" statement, the connection will now be closed
 	// automatically
 	log.Info().Msg("database schema found. closing temporary database connection")
+}
+
+// this function now establishes the globally used database connection and
+// checks afterward if the required tables are present in the previously
+// configured schema
+func init() {
+	// get the database configuration again
+	c := globals.Configuration.Database
+	// now build the dsn including the schema name
+	dsn := c.BuildDSN()
+	// now try to open the connection
+	var err error
+	globals.Database, err = sql.Open("postgres", dsn)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to open permanent database connection")
+	}
+
+	// now configure the connection pooling used to reduce reconnections
+	globals.Database.SetConnMaxLifetime(time.Minute * 3)
+	globals.Database.SetMaxOpenConns(50)
+	globals.Database.SetMaxIdleConns(50)
+
+	// now ping the database to confirm the connectivity
+	err = globals.Database.Ping()
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to ping database server over permanent connection")
+	}
+
+	// now validate that the following tables are present in the database schema
+	requiredTables := []string{"transactions", "cash_registers", "action_log"}
+
+	for _, requiredTable := range requiredTables {
+		// query the database on the table
+		row, err := globals.SqlQueries.QueryRow(globals.Database, "is-table-available", c.Schema, requiredTable)
+		if err != nil {
+			log.Fatal().Err(err).Str("table", requiredTable).Msg("unable to check if required table exists")
+		}
+
+		// now parse the query result into a boolean
+		var tablePresent bool
+		err = row.Scan(&tablePresent)
+
+		if !tablePresent {
+			// todo: replace fatal error with a warning message and table
+			//  creation
+			log.Fatal().Str("table", requiredTable).Msg("table not found in configured schema")
+		} else {
+			log.Debug().Str("table", requiredTable).Msg("found table in schema")
+		}
+	}
+
 }

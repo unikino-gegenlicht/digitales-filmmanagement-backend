@@ -14,7 +14,10 @@
 !Dockerfile
 !queries.sql
 !Makefile
+!openapi.yaml
 
 # ...even if they are in subdirectories
 !*/*.go
-!**/*.go
+!types/**/*.go
+!middleware/**/*.go
+!middleware

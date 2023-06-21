@@ -2,6 +2,7 @@ package globals
 
 import (
 	"database/sql"
+	"net/http"
 
 	"github.com/go-chi/httplog"
 	"github.com/qustavo/dotsql"
@@ -21,3 +22,6 @@ var Database *sql.DB
 
 // SqlQueries contains the loaded sql queries from `queries.sql`
 var SqlQueries *dotsql.DotSql
+
+// HttpClient is a globally usable http client with no additional configuration
+var HttpClient = &http.Client{}

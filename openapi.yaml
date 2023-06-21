@@ -106,6 +106,12 @@ components:
         createdBy:
           type: string
           description: The full name of the person that created the transaction
+
+tags:
+  - name: Registers
+    description: |
+      All actions that can create, update, read or delete registers
+
 paths:
   /registers/:
     description: |
@@ -114,7 +120,7 @@ paths:
       summary: Get all registers
       operationId: getRegisters
       tags:
-        - registers
+        - Registers
       responses:
         '200':
           description: OK
@@ -135,7 +141,7 @@ paths:
       summary: Create a new register
       operationId: newRegister
       tags:
-        - registers
+        - Registers
       responses:
         '200':
           description: OK
@@ -176,7 +182,7 @@ paths:
     get:
       summary: Get information about a register
       tags:
-        - registers
+        - Registers
       operationId: getSingleRegister
       responses:
         '200':
@@ -207,7 +213,7 @@ paths:
         the data of the current register. Therefore sending null values
         will result in a nulled database column.
       tags:
-        - registers
+        - Registers
       operationId: updateRegister
       requestBody:
         $ref: '#/components/requestBodies/Register'
@@ -246,7 +252,7 @@ paths:
         When using this endpoint the register will be deleted, but all transactions
         will be kept to secure the transaction history
       tags:
-        - registers
+        - Registers
       operationId: updateRegister
       requestBody:
         $ref: '#/components/requestBodies/Register'

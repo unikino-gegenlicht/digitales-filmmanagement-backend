@@ -5,5 +5,5 @@ package config
 // to the documented location (see README or INSTALLATION)
 type Configuration struct {
 	OIDC     OpenIdConnectConfiguration `toml:"oidc"`
-	Database MariaDbConfiguration       `toml:"database"`
+	Database DbConfiguration            `toml:"database"`
 }
