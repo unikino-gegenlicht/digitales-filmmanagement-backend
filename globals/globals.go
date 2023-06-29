@@ -17,8 +17,11 @@ var HttpLogger = httplog.NewLogger("management-backend", httplog.Options{JSON: t
 // every used subsection from the 'configuration.toml' file.
 var Configuration config.Configuration
 
-// Database is the shared connection to the MariaDB Database used by the backend
+// Database is the shared connection to the Postgres Database used by the backend
 var Database *sql.DB
+
+// WpDatabase is the shared connection to the MariaDB Database used by the backend
+var WpDatabase *sql.DB
 
 // SqlQueries contains the loaded sql queries from `queries.sql`
 var SqlQueries *dotsql.DotSql

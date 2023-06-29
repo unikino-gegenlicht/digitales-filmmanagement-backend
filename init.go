@@ -15,6 +15,7 @@ import (
 	"digitales-filmmanagement-backend/config"
 	"digitales-filmmanagement-backend/globals"
 	// database driver
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
 
@@ -176,7 +177,7 @@ func init() {
 	}
 
 	// now validate that the following tables are present in the database schema
-	requiredTables := []string{"transactions", "cash_registers", "action_log"}
+	requiredTables := []string{"transactions", "cash_registers"}
 
 	for _, requiredTable := range requiredTables {
 		// query the database on the table
@@ -198,4 +199,33 @@ func init() {
 		}
 	}
 
+}
+
+// this function now establishes the globally used database connection and
+// checks afterward if the required tables are present in the previously
+// configured schema
+func init() {
+	// get the database configuration again
+	wp := globals.Configuration.WordPress
+	_ = wp.Validate()
+	// now build the dsn including the schema name
+	dsn := wp.BuildDSN()
+	// now try to open the connection
+	var err error
+	globals.WpDatabase, err = sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to open permanent database connection")
+	}
+
+	// now configure the connection pooling used to reduce reconnections
+	globals.WpDatabase.SetConnMaxLifetime(time.Minute * 3)
+	globals.WpDatabase.SetMaxOpenConns(50)
+	globals.WpDatabase.SetMaxIdleConns(50)
+
+	// now ping the database to confirm the connectivity
+	err = globals.WpDatabase.Ping()
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to ping database server over permanent connection")
+	}
+	log.Info().Msg("connected to wordpress")
 }
