@@ -24,9 +24,11 @@ func NativeErrorHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// create a new channel
 		c := make(chan error)
+		a := make(chan bool)
 		// now access the request context
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, "nativeErrorChannel", c)
+		ctx = context.WithValue(ctx, "nativeErrorHandled", a)
 		// use a go function to listen to the channel and output the
 		// request error to the client using json
 		go func() {
@@ -35,11 +37,13 @@ func NativeErrorHandler(next http.Handler) http.Handler {
 				case err := <-c:
 					e := types.APIError{}
 					e.WrapError(err)
-					w.Header().Set("Content-Type", "application/json")
+					w.Header().Set("Content-Type", "text/json")
+					w.WriteHeader(500)
 					encodingErr := json.NewEncoder(w).Encode(e)
 					if encodingErr != nil {
-						log.Error().Err(err).Msg("unable to send error")
+						log.Error().Err(encodingErr).Msg("unable to send error")
 					}
+					a <- true
 					return
 				}
 			}
