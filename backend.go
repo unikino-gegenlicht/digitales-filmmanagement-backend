@@ -1,6 +1,7 @@
 package main
 
 import (
+	"digitales-filmmanagement-backend/routes"
 	"net/http"
 	"os"
 	"os/signal"
@@ -30,6 +31,7 @@ func main() {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})
+	router.Mount("/registerItems", registerItemRouter())
 
 	server := &http.Server{
 		Addr:         "0.0.0.0:8000",
@@ -53,4 +55,10 @@ func main() {
 
 	// Block further code execution until the shutdown signal was received
 	<-cancelSignal
+}
+
+func registerItemRouter() http.Handler {
+	r := chi.NewRouter()
+	r.Get("/", routes.GetAllRegisterItems)
+	return r
 }

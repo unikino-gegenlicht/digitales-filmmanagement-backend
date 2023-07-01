@@ -15,3 +15,9 @@ WHERE
     table_schema  = $1
 AND
     table_name = $2;
+
+-- name: get-register-items
+SELECT
+    *
+FROM
+    gegenlicht.register_items;
