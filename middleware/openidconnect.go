@@ -2,14 +2,13 @@ package middleware
 
 import (
 	"context"
+	"digitales-filmmanagement-backend/types"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
 	"digitales-filmmanagement-backend/config"
 	"digitales-filmmanagement-backend/globals"
-	httpTypes "digitales-filmmanagement-backend/types/http"
 )
 
 func UserInfo(c config.OpenIdConnectConfiguration) func(handler http.Handler) http.Handler {
@@ -17,13 +16,18 @@ func UserInfo(c config.OpenIdConnectConfiguration) func(handler http.Handler) ht
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			// access the current request context
 			ctx := request.Context()
+			// now get the global error handler
+			nativeErrorChannel := ctx.Value("nativeErrorChannel").(chan error)
 			// now access the request's headers and get the authorization header value
 			authHeaderValue := strings.TrimSpace(request.Header.Get("Authorization"))
 			// now check if the header actually does contain anything
 			if authHeaderValue == "" {
-				e := httpTypes.ErrorMessage{
-					Error:   "NO_AUTH_HEADER_SET",
-					Message: "THe request lacks the `Authorization` header",
+				e := types.APIError{
+					ErrorCode:        "NO_AUTH_HEADER_SET",
+					ErrorTitle:       "No Authorization Header set",
+					ErrorDescription: "The request needs to have the Authorization header set to allow access to the API",
+					HttpStatusCode:   401,
+					HttpStatusText:   http.StatusText(401),
 				}
 				writer.Header().Set("Content-Type", "text/json")
 				writer.WriteHeader(401)
@@ -34,12 +38,7 @@ func UserInfo(c config.OpenIdConnectConfiguration) func(handler http.Handler) ht
 			// the OpenIDConnect server
 			userinfoRequest, err := http.NewRequest("GET", *c.UserInfoEndpoint, nil)
 			if err != nil {
-				e := httpTypes.ErrorMessage{
-					Error:   "INTERNAL_ERROR",
-					Message: "Error while building request for userinfo: " + err.Error(),
-				}
-				writer.WriteHeader(401)
-				_ = json.NewEncoder(writer).Encode(e)
+				nativeErrorChannel <- err
 				return
 			}
 			userinfoRequest.Header.Set("Authorization", authHeaderValue)
@@ -47,24 +46,22 @@ func UserInfo(c config.OpenIdConnectConfiguration) func(handler http.Handler) ht
 			// now execute the request
 			userinfoResponse, err := globals.HttpClient.Do(userinfoRequest)
 			if err != nil {
-				e := httpTypes.ErrorMessage{
-					Error:   "INTERNAL_ERROR",
-					Message: "Error while requesting userinfo: " + err.Error(),
-				}
-				writer.Header().Set("Content-Type", "text/json")
-				writer.WriteHeader(401)
-				_ = json.NewEncoder(writer).Encode(e)
+				nativeErrorChannel <- err
 				return
 			}
 			// now parse the user info into a map
 			userInfo := make(map[string]interface{})
-			json.NewDecoder(userinfoResponse.Body).Decode(&userInfo)
+			err = json.NewDecoder(userinfoResponse.Body).Decode(&userInfo)
+			if err != nil {
+				nativeErrorChannel <- err
+				return
+			}
 
 			// now set the full name of the user and the groups into the
 			// context
-			ctx = context.WithValue(ctx, "username", userInfo["preferred_username"])
+			ctx = context.WithValue(ctx, "user", userInfo["given_name"])
 
-			fmt.Println(userInfo)
+			next.ServeHTTP(writer, request)
 		})
 	}
 }

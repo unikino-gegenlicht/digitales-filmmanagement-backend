@@ -23,6 +23,7 @@ func main() {
 	router.Use(chiMiddleware.RealIP)
 	router.Use(chiMiddleware.RequestID)
 	router.Use(chiMiddleware.Logger)
+	router.Use(middleware.NativeErrorHandler)
 	router.Use(middleware.UserInfo(globals.Configuration.OIDC))
 
 	// FIXME: remove preliminary testing route
