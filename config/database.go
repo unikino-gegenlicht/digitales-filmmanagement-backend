@@ -13,7 +13,6 @@ type DbConfiguration struct {
 	Port      *string `toml:"port"`
 	User      *string `toml:"user"`
 	Password  *string `toml:"password"`
-	Schema    *string `toml:"schema"`
 	validated bool
 }
 
@@ -36,14 +35,6 @@ func (c *DbConfiguration) Validate() error {
 	// now check if the host is empty
 	if strings.TrimSpace(*c.User) == "" {
 		return ErrEmptyDatabaseUser
-	}
-	// check if the host was set in the configuration
-	if c.Schema == nil {
-		return ErrNoDatabaseSpecified
-	}
-	// now check if the host is empty
-	if strings.TrimSpace(*c.Schema) == "" {
-		return ErrEmptyDatabaseSpecified
 	}
 
 	// now check if the optional port was set. if not, set it to 5432, which is

@@ -150,23 +150,6 @@ func init() {
 	log.Info().Msg("connected to database via temporary connection")
 	log.Info().Msg("checking for database schema")
 
-	// now execute the schema check query
-	row, err := globals.SqlQueries.QueryRow(db, "is-schema-available", c.Schema)
-	if err != nil {
-		log.Fatal().Err(err).Msg("unable to verify the provided database schema name")
-	}
-	// now parse the response into a boolean
-	var schemaFound bool
-	err = row.Scan(&schemaFound)
-
-	if err != nil {
-		log.Fatal().Err(err).Msg("unable to read database response")
-	}
-
-	if !schemaFound {
-		log.Fatal().Msg("configured schema not found in the database.")
-	}
-
 	// since the schema is set up in the database, this function is done with
 	// its task. due to the "defer" statement, the connection will now be closed
 	// automatically
@@ -199,29 +182,17 @@ func init() {
 		log.Fatal().Err(err).Msg("unable to ping database server over permanent connection")
 	}
 
-	// now validate that the following tables are present in the database schema
-	requiredTables := []string{"transactions", "cash_registers"}
-
-	for _, requiredTable := range requiredTables {
-		// query the database on the table
-		row, err := globals.SqlQueries.QueryRow(globals.Database, "is-table-available", c.Schema, requiredTable)
+	// now execute the init.sql file to create the needed tables if they are
+	// not already present
+	log.Info().Msg("checking database for schema and tables. missing objects will be created")
+	initQueries, err := dotsql.LoadFromFile("./init.sql")
+	for name, _ := range initQueries.QueryMap() {
+		_, err := initQueries.Query(globals.Database, name)
 		if err != nil {
-			log.Fatal().Err(err).Str("table", requiredTable).Msg("unable to check if required table exists")
-		}
-
-		// now parse the query result into a boolean
-		var tablePresent bool
-		err = row.Scan(&tablePresent)
-
-		if !tablePresent {
-			// todo: replace fatal error with a warning message and table
-			//  creation
-			log.Fatal().Str("table", requiredTable).Msg("table not found in configured schema")
-		} else {
-			log.Debug().Str("table", requiredTable).Msg("found table in schema")
+			log.Fatal().Err(err).Msg("unable to create needed database objects")
 		}
 	}
-
+	log.Info().Msg("connected to postgres")
 }
 
 // this function now establishes the globally used database connection and
