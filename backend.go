@@ -25,6 +25,7 @@ func main() {
 	router.Use(chiMiddleware.RequestID)
 	router.Use(chiMiddleware.Logger)
 	router.Use(middleware.NativeErrorHandler)
+	router.Use(middleware.APIErrorHandler(globals.Errors))
 	router.Use(middleware.UserInfo(globals.Configuration.OIDC))
 
 	// FIXME: remove preliminary testing route
@@ -33,6 +34,7 @@ func main() {
 	})
 	router.Mount("/registerItems", registerItemRouter())
 	router.Mount("/registers", registerRouter())
+	router.Mount("/statistics", routes.StatisticsRouter())
 
 	server := &http.Server{
 		Addr:         "0.0.0.0:8000",
@@ -67,5 +69,6 @@ func registerItemRouter() http.Handler {
 func registerRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", routes.GetAllRegisters)
+	r.Post("/{registerId}/transactions", routes.NewRegisterTransaction)
 	return r
 }

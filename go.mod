@@ -4,11 +4,11 @@ go 1.20
 
 require (
 	github.com/blockloop/scan/v2 v2.0.1
-	github.com/go-chi/chi/v5 v5.0.7
-	github.com/go-chi/cors v1.2.1
+	github.com/ggicci/httpin v0.11.0
+	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/httplog v0.3.0
 	github.com/go-sql-driver/mysql v1.7.1
-	github.com/jackc/pgtype v1.14.0
+	github.com/google/uuid v1.3.0
 	github.com/lib/pq v1.10.9
 	github.com/pelletier/go-toml/v2 v2.0.8
 	github.com/qustavo/dotsql v1.1.0
@@ -16,7 +16,6 @@ require (
 )
 
 require (
-	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

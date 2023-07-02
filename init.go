@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"digitales-filmmanagement-backend/types"
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -93,6 +95,27 @@ func init() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("unable to load sql queries")
 	}
+}
+
+// this function now loads the prepared errors from the error file and parses
+// them into wisdom errors
+func init() {
+	log.Info().Msg("loading predefined errors")
+	file, err := os.Open("./errors.json")
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to open error configuration file")
+	}
+
+	var errors []types.APIError
+	err = json.NewDecoder(file).Decode(&errors)
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to load error configuration file")
+	}
+	for _, e := range errors {
+		e.InferHttpStatusText()
+		globals.Errors[e.ErrorCode] = e
+	}
+	log.Info().Msg("loaded predefined errors")
 }
 
 // this function connects the application to the database server and checks if

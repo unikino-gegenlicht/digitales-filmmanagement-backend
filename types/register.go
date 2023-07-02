@@ -9,3 +9,10 @@ type Register struct {
 	// Description contains a optional
 	Description *string `json:"description"`
 }
+
+type RegisterTransaction struct {
+	Title       string         `json:"title"`
+	Description string         `json:"description"`
+	Total       float64        `json:"amount"`
+	Articles    map[string]int `json:"articleCounts"`
+}
