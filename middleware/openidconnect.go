@@ -61,7 +61,7 @@ func UserInfo(c config.OpenIdConnectConfiguration) func(handler http.Handler) ht
 			// context
 			ctx = context.WithValue(ctx, "user", userInfo["given_name"])
 
-			next.ServeHTTP(writer, request)
+			next.ServeHTTP(writer, request.WithContext(ctx))
 		})
 	}
 }

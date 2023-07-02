@@ -2,6 +2,7 @@ package globals
 
 import (
 	"database/sql"
+	"digitales-filmmanagement-backend/types"
 	"net/http"
 
 	"github.com/go-chi/httplog"
@@ -28,3 +29,7 @@ var SqlQueries *dotsql.DotSql
 
 // HttpClient is a globally usable http client with no additional configuration
 var HttpClient = &http.Client{}
+
+// Errors contains all predefined types.APIError entries as an mapping between
+// the error code and the error object
+var Errors = make(map[string]types.APIError)
