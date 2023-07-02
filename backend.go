@@ -27,11 +27,6 @@ func main() {
 	router.Use(middleware.NativeErrorHandler)
 	router.Use(middleware.APIErrorHandler(globals.Errors))
 	router.Use(middleware.UserInfo(globals.Configuration.OIDC))
-
-	// FIXME: remove preliminary testing route
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
-	})
 	router.Mount("/registerItems", registerItemRouter())
 	router.Mount("/registers", registerRouter())
 	router.Mount("/statistics", routes.StatisticsRouter())
