@@ -21,3 +21,9 @@ SELECT
     *
 FROM
     gegenlicht.register_items;
+
+-- name: get-registers
+SELECT
+    *
+FROM
+    gegenlicht.cash_registers;

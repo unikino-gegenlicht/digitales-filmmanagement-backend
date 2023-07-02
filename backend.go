@@ -32,6 +32,7 @@ func main() {
 		w.Write([]byte("welcome"))
 	})
 	router.Mount("/registerItems", registerItemRouter())
+	router.Mount("/registers", registerRouter())
 
 	server := &http.Server{
 		Addr:         "0.0.0.0:8000",
@@ -60,5 +61,11 @@ func main() {
 func registerItemRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", routes.GetAllRegisterItems)
+	return r
+}
+
+func registerRouter() http.Handler {
+	r := chi.NewRouter()
+	r.Get("/", routes.GetAllRegisters)
 	return r
 }
