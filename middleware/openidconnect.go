@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"context"
-	"digitales-filmmanagement-backend/types"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -18,20 +18,15 @@ func UserInfo(c config.OpenIdConnectConfiguration) func(handler http.Handler) ht
 			ctx := request.Context()
 			// now get the global error handler
 			nativeErrorChannel := ctx.Value("nativeErrorChannel").(chan error)
+			handledNativeError := ctx.Value("nativeErrorHandled").(chan bool)
+			apiErrorHandler := ctx.Value("apiErrorChannel").(chan string)
+			handledApiError := ctx.Value("apiErrorHandled").(chan bool)
 			// now access the request's headers and get the authorization header value
 			authHeaderValue := strings.TrimSpace(request.Header.Get("Authorization"))
 			// now check if the header actually does contain anything
 			if authHeaderValue == "" {
-				e := types.APIError{
-					ErrorCode:        "NO_AUTH_HEADER_SET",
-					ErrorTitle:       "No Authorization Header set",
-					ErrorDescription: "The request needs to have the Authorization header set to allow access to the API",
-					HttpStatusCode:   401,
-					HttpStatusText:   http.StatusText(401),
-				}
-				writer.Header().Set("Content-Type", "text/json")
-				writer.WriteHeader(401)
-				json.NewEncoder(writer).Encode(e)
+				apiErrorHandler <- "MISSING_AUTHORIZATION_HEADER"
+				<-handledApiError
 				return
 			}
 			// since some value was set in the authorization header, now build the request for the userinfo endpoint of
@@ -39,6 +34,7 @@ func UserInfo(c config.OpenIdConnectConfiguration) func(handler http.Handler) ht
 			userinfoRequest, err := http.NewRequest("GET", *c.UserInfoEndpoint, nil)
 			if err != nil {
 				nativeErrorChannel <- err
+				<-handledNativeError
 				return
 			}
 			userinfoRequest.Header.Set("Authorization", authHeaderValue)
@@ -47,19 +43,38 @@ func UserInfo(c config.OpenIdConnectConfiguration) func(handler http.Handler) ht
 			userinfoResponse, err := globals.HttpClient.Do(userinfoRequest)
 			if err != nil {
 				nativeErrorChannel <- err
+				<-handledNativeError
 				return
 			}
-			// now parse the user info into a map
-			userInfo := make(map[string]interface{})
-			err = json.NewDecoder(userinfoResponse.Body).Decode(&userInfo)
-			if err != nil {
-				nativeErrorChannel <- err
-				return
-			}
+			// now check the response code
+			switch userinfoResponse.StatusCode {
+			case 200:
+				// now parse the user info into a map
+				userInfo := make(map[string]interface{})
+				err = json.NewDecoder(userinfoResponse.Body).Decode(&userInfo)
+				if err != nil {
+					nativeErrorChannel <- err
+					<-handledNativeError
+					return
+				}
 
-			// now set the full name of the user and the groups into the
-			// context
-			ctx = context.WithValue(ctx, "user", userInfo["given_name"])
+				// now set the full name of the user and the groups into the
+				// context
+				ctx = context.WithValue(ctx, "user", userInfo["given_name"])
+				break
+			case 401:
+				apiErrorHandler <- "UNAUTHORIZED"
+				<-handledApiError
+				return
+			case 403:
+				apiErrorHandler <- "FORBIDDEN"
+				<-handledApiError
+				return
+			default:
+				nativeErrorChannel <- errors.New("unexpected response code during authentication validation")
+				<-handledNativeError
+				return
+			}
 
 			next.ServeHTTP(writer, request.WithContext(ctx))
 		})

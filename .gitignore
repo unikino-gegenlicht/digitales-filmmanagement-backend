@@ -18,6 +18,7 @@
 
 # now allow the file containing the sql queries for this project
 !queries.sql
+!errors.json
 
 # now allow the docker related files
 !Dockerfile

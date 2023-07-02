@@ -1,8 +1,6 @@
 package types
 
-import "time"
-
 type StatisticsRequestInput struct {
-	From  *time.Time `in:"query=from"`
-	Until *time.Time `in:"query=until"`
+	From  *int64 `in:"query=from"`
+	Until *int64 `in:"query=until"`
 }

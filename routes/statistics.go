@@ -34,16 +34,16 @@ func itemStatistics(w http.ResponseWriter, r *http.Request) {
 		until = time.Now()
 		break
 	case parameters.From != nil && parameters.Until == nil:
-		from = *parameters.From
+		from = time.Unix(*parameters.From, 0)
 		until = time.Now()
 		break
 	case parameters.From == nil && parameters.Until != nil:
 		from = time.Time{}
-		until = *parameters.Until
+		until = time.Unix(*parameters.Until, 0)
 		break
 	case parameters.From != nil && parameters.Until != nil:
-		from = *parameters.From
-		until = *parameters.Until
+		from = time.Unix(*parameters.From, 0)
+		until = time.Unix(*parameters.Until, 0)
 		break
 	default:
 		nativeErrorHandler <- errors.New("unmatched case")
