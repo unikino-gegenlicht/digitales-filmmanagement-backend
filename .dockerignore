@@ -1,0 +1,14 @@
+*
+
+# But not these files...
+!/.gitignore
+!/.dockerignore
+
+!*.go
+!go.sum
+!go.mod
+!Dockerfile
+# !Makefile
+
+# ...even if they are in subdirectories
+!*/*.go

@@ -1,0 +1,38 @@
+[
+  {
+    "code": "INVALID_REGISTER_UUID",
+    "title": "Invalid Register UUID",
+    "description": "The UUID supplied in the URL is not valid",
+    "httpCode": 400
+  },
+  {
+    "code": "INVALID_JSON",
+    "title": "Invalid JSON",
+    "description": "The request body does not contain valid json",
+    "httpCode": 400
+  },
+  {
+    "code": "INVALID_TRANSACTION",
+    "title": "Invalid Transaction",
+    "description": "The transaction sent to the API does not match the required format",
+    "httpCode": 400
+  },
+  {
+    "code": "MISSING_AUTHORIZATION_HEADER",
+    "title": "Missing Authorization Header",
+    "description": "The request needs to have the Authorization header set to allow access to the API",
+    "httpCode": 400
+  },
+  {
+    "code": "UNAUTHORIZED",
+    "title": "Invalid Authorization Information",
+    "description": "The request contained invalid authorization information",
+    "httpCode": 401
+  },
+  {
+    "code": "FORBIDDEN",
+    "title": "Access Denied",
+    "description": "The request contained valid authorization information, however the access to the API was denied",
+    "httpCode": 401
+  }
+]
