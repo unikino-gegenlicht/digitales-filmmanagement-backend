@@ -67,6 +67,11 @@ func itemStatistics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(statistics) == 0 {
+		w.WriteHeader(204)
+		return
+	}
+
 	// now return the statistics
 	w.Header().Set("Content-Type", "text/json")
 	err = json.NewEncoder(w).Encode(statistics)

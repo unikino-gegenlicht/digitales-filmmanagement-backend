@@ -35,6 +35,10 @@ func GetAllRegisters(w http.ResponseWriter, r *http.Request) {
 		<-handledError
 		return
 	}
+	if len(items) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 	// now return the available register items
 	w.Header().Set("Content-Type", "text/json")
 	err = json.NewEncoder(w).Encode(items)
