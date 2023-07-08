@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"digitales-filmmanagement-backend/types"
 	"encoding/json"
-	"fmt"
 	"os"
 	"time"
 
@@ -128,8 +127,6 @@ func init() {
 
 	// use the configuration to create a dsn without specifying the schema
 	dsn := c.BuildDSN()
-
-	fmt.Println(dsn)
 
 	// now open a connection to the database
 	db, err := sql.Open("postgres", dsn)
