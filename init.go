@@ -183,6 +183,9 @@ func init() {
 	// not already present
 	log.Info().Msg("checking database for schema and tables. missing objects will be created")
 	initQueries, err := dotsql.LoadFromFile("./init.sql")
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to load sql file with initial table definitions")
+	}
 	for name, _ := range initQueries.QueryMap() {
 		_, err := initQueries.Query(globals.Database, name)
 		if err != nil {
